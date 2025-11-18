@@ -1,6 +1,6 @@
 name: downloader_flutter
 description: "A powerful Flutter download plugin supporting Android & iOS with real-time progress, parallel downloads, background safety, system DownloadManager integration, iOS URLSession delegate support, automatic file saving, Photos library export, and EventChannel-based streaming updates. Designed for handling large files with accurate progress tracking and smooth cross-platform performance."
-version: 0.0.2
+version: 0.0.3
 homepage: "https://github.com/Anandhakrishnan-CodeBlock/downloader_flutter.git"
 
 environment:

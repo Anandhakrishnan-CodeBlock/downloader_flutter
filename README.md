@@ -132,7 +132,7 @@ final _downloaderFlutterPlugin = DownloaderFlutter();
 ```
     await _downloaderFlutterPlugin.downloadSingleFile(
         url: 'https://images.pexels.com/photos/10725897/pexels-photo-10725897.jpeg',
-        fileName: "image.jpg",
+        fileName: "image.jpeg",
          saveToPhoto: true, (Optional)
          showToastAndroid: false, (Optional)
          response: (data) {
@@ -164,7 +164,7 @@ final _downloaderFlutterPlugin = DownloaderFlutter();
           'image2.jpg',
           'image3.jpg',
           'image4.jpg',
-          'image5.jpg',
+          'image5.png',
         ],
         saveToPhoto: true, (Optional)
         showToastAndroid: true, (Optional)
