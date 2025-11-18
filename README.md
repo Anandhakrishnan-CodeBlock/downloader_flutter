@@ -131,8 +131,8 @@ final _downloaderFlutterPlugin = DownloaderFlutter();
 ## Single file download
 ```
     await _downloaderFlutterPlugin.downloadSingleFile(
-        url: 'https://example.com/file.mp4',
-        fileName: "my_video.mp4", 
+        url: 'https://images.pexels.com/photos/10725897/pexels-photo-10725897.jpeg',
+        fileName: "image.jpg",
          saveToPhoto: true, (Optional)
          showToastAndroid: false, (Optional)
          response: (data) {
@@ -153,14 +153,18 @@ final _downloaderFlutterPlugin = DownloaderFlutter();
 ```
     await _downloaderFlutterPlugin.downloadMultipleFile(
         urls: [
-          'https://picsum.photos/id/237/200/300',
-          'https://picsum.photos/id/237/200/300',
-          'https://picsum.photos/id/237/200/300',
+          'https://images.pexels.com/photos/177598/pexels-photo-177598.jpeg',
+          'https://images.pexels.com/photos/577585/pexels-photo-577585.jpeg',
+          'https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg',
+          'https://images.pexels.com/photos/4816921/pexels-photo-4816921.jpeg',
+          'https://images.pexels.com/photos/248515/pexels-photo-248515.png',
         ],
         fileNames: [
           'image1.jpg',
           'image2.jpg',
           'image3.jpg',
+          'image4.jpg',
+          'image5.jpg',
         ],
         saveToPhoto: true, (Optional)
         showToastAndroid: true, (Optional)
