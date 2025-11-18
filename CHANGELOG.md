@@ -1,3 +1,4 @@
-## 0.0.1
+## 0.0.2
 
-* Initial version.
+* README file bug fix 
+* Example app code changes.
