@@ -1,5 +1,5 @@
 # Downloader Flutter
----
+
 A powerful Flutter download plugin supporting Android & iOS with real-time progress, parallel downloads, background safety, system [DownloadManager](https://developer.android.com/reference/android/app/DownloadManager) integration, iOS [URLSessionDownloadDelegate](https://developer.apple.com/documentation/foundation/urlsessiondownloaddelegate) support, automatic file saving, Photos library export, and EventChannel-based streaming updates. Designed for handling large files with accurate progress tracking and smooth cross-platform performance.
 
 Flutter Downloader Plugin
@@ -8,7 +8,7 @@ A full-featured, cross-platform file downloader built for Flutter, supporting An
 This plugin provides advanced download capabilities:
 
 # 🚀 Features
----
+
 ## Android Support
 
 - Uses Android DownloadManager for reliable system-level downloading
@@ -121,7 +121,6 @@ This plugin provides advanced download capabilities:
 <key>LSSupportsOpeningDocumentsInPlace</key>
 <true/>
 ```
----
 # Usage
 - Object creation for DownloaderFlutter() class.
 ```
@@ -131,10 +130,10 @@ final _downloaderFlutterPlugin = DownloaderFlutter();
 ## Single file download
 ```
     await _downloaderFlutterPlugin.downloadSingleFile(
-        url: 'https:.....', // File url
-        fileName: "file_name.ext", // File name with extension ex: sample.jpg
-         saveToPhoto: true,
-         showToastAndroid: false,
+        url: 'https://example.com/file.mp4',
+        fileName: "my_video.mp4", 
+         saveToPhoto: true, (Optional)
+         showToastAndroid: false, (Optional)
          response: (data) {
              debugPrint("Response In App: $data");
          },
@@ -162,7 +161,8 @@ final _downloaderFlutterPlugin = DownloaderFlutter();
           'image2.jpg',
           'image3.jpg',
         ],
-        showToastAndroid: true,
+        saveToPhoto: true, (Optional)
+        showToastAndroid: true, (Optional)
         response: (data) {
           debugPrint("Response In App: $data");
         },
@@ -246,6 +246,5 @@ final _downloaderFlutterPlugin = DownloaderFlutter();
 | **error**        |    When an internal error occurs     |       Provides an error message detailing what went wrong.        |
 
 # Bugs/Requests
----
 Feel free to open an issue if you encounter any problems or think that the plugin is missing some feature.
 Pull request are also very welcome!
