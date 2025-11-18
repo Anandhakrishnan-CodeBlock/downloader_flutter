@@ -9,21 +9,45 @@ class MockDownloaderFlutterPlatform
     implements DownloaderFlutterPlatform {
 
   @override
-  Future<String?> getPlatformVersion() => Future.value('42');
+  Future<String?> downloadSingleFile({
+    required String? url,
+    required String fileName,
+    required Function response,
+    bool? saveToPhoto,
+    bool? showToastAndroid
+  }) => Future.value("Download Response");
+
+  @override
+  Future<String?> downloadMultipleFile({
+    required List<String?> urls,
+    required List<String> fileNames,
+    required Function response,
+    bool? saveToPhoto,
+    bool? showToastAndroid}) {
+    return Future.value("Download Response");
+  }
+
+  @override
+  Stream<Map<String, dynamic>> downloadProgress() {
+    return Stream.value({});
+  }
 }
 
 void main() {
   final DownloaderFlutterPlatform initialPlatform = DownloaderFlutterPlatform.instance;
+  DownloaderFlutter downloaderFlutterPlugin = DownloaderFlutter();
+  MockDownloaderFlutterPlatform fakePlatform = MockDownloaderFlutterPlatform();
+  DownloaderFlutterPlatform.instance = fakePlatform;
 
   test('$MethodChannelDownloaderFlutter is the default instance', () {
     expect(initialPlatform, isInstanceOf<MethodChannelDownloaderFlutter>());
   });
 
-  test('getPlatformVersion', () async {
-    DownloaderFlutter downloaderFlutterPlugin = DownloaderFlutter();
-    MockDownloaderFlutterPlatform fakePlatform = MockDownloaderFlutterPlatform();
-    DownloaderFlutterPlatform.instance = fakePlatform;
-
-    expect(await downloaderFlutterPlugin.getPlatformVersion(), '42');
+  test('downloadSingleFile', () async {
+    expect(await downloaderFlutterPlugin.downloadSingleFile(
+      url: "https://picsum.photos/id/237/200/300",
+      fileName: 'Sample',
+      response: (data) { },
+    ), "Download Response");
   });
 }

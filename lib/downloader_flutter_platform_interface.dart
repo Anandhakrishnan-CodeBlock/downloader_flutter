@@ -23,7 +23,25 @@ abstract class DownloaderFlutterPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<String?> getPlatformVersion() {
-    throw UnimplementedError('platformVersion() has not been implemented.');
+  Future<String?> downloadSingleFile({
+    required String? url,
+    required String fileName,
+    required Function response,
+    bool? saveToPhoto = false,
+    bool? showToastAndroid = false}) async {
+    throw UnimplementedError('downloadSingleFile() has not been implemented.');
+  }
+
+  Future<String?> downloadMultipleFile({
+    required List<String?> urls,
+    required List<String> fileNames,
+    required Function response,
+    bool? saveToPhoto = false,
+    bool? showToastAndroid = false}) async {
+    throw UnimplementedError('downloadMultipleFile() has not been implemented.');
+  }
+
+  Stream<Map<String, dynamic>> downloadProgress() async* {
+    throw UnimplementedError('downloadProgress() has not been implemented.');
   }
 }

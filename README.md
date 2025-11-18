@@ -116,10 +116,11 @@ This plugin provides advanced download capabilities:
 ### 4. Background downloads (optional but recommended)
 > If you want downloads to continue when the app goes into the background:
 ```
-<key>UIFileSharingEnabled</key>
-<true/>
-<key>LSSupportsOpeningDocumentsInPlace</key>
-<true/>
+<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>processing</string>
+    </array>
 ```
 # Usage
 - Object creation for DownloaderFlutter() class.
@@ -247,4 +248,3 @@ final _downloaderFlutterPlugin = DownloaderFlutter();
 
 # Bugs/Requests
 Feel free to open an issue if you encounter any problems or think that the plugin is missing some feature.
-Pull request are also very welcome!

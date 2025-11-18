@@ -12,7 +12,7 @@ import 'package:integration_test/integration_test.dart';
 
 import 'package:downloader_flutter/downloader_flutter.dart';
 
-void main() {
+/*void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('getPlatformVersion test', (WidgetTester tester) async {
@@ -22,4 +22,4 @@ void main() {
     // just assert that some non-empty string is returned.
     expect(version?.isNotEmpty, true);
   });
-}
+}*/
