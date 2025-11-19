@@ -1,3 +1,7 @@
+## 0.0.4
+
+* README file update for demo video
+
 ## 0.0.3
 
 * README file update
