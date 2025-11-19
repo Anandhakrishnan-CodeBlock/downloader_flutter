@@ -123,10 +123,10 @@ This plugin provides advanced download capabilities:
 > If you want downloads to continue when the app goes into the background:
 ```
 <key>UIBackgroundModes</key>
-	<array>
-		<string>fetch</string>
-		<string>processing</string>
-    </array>
+<array>
+<string>fetch</string>
+<string>processing</string>
+</array>
 ```
 # Usage
 - Object creation for DownloaderFlutter() class.
