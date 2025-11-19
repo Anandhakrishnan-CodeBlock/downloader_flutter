@@ -8,10 +8,10 @@ A full-featured, cross-platform file downloader built for Flutter, supporting An
 This plugin provides advanced download capabilities:
 
 ### Android Demo 
-https://github.com/Anandhakrishnan-CodeBlock/downloader_flutter/blob/main/assets/Android_Downloader_Flutter_GIF.gif
+![Android_Downloader_Flutter_GIF](https://github.com/user-attachments/assets/24ffba7b-6b60-49f5-8527-28dd4d35cb87)
 
 ### iOS Demo
-https://github.com/Anandhakrishnan-CodeBlock/downloader_flutter/blob/main/assets/iOS_Downloader_Flutter_GIF.gif
+![iOS_Downloader_Flutter_GIF](https://github.com/user-attachments/assets/a809e1f9-4d91-4109-9c9d-055e5b498e9d)
 
 # 🚀 Features
 
