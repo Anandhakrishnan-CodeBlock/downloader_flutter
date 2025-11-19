@@ -21,7 +21,7 @@ class DownloadFilesApp extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(title: const Text('Plugin example app')),
+        appBar: AppBar(title: const Text('Downloader Flutter')),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
