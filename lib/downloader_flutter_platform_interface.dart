@@ -2,6 +2,13 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'downloader_flutter_method_channel.dart';
 
+/// DownloaderFlutterPlatform
+/// DownloaderFlutterPlatform is a abstract class
+/// Hold the declaration methods
+/// - downloadSingleFile()
+/// - downloadMultipleFile()
+/// - downloadProgress()
+
 abstract class DownloaderFlutterPlatform extends PlatformInterface {
   /// Constructs a DownloaderFlutterPlatform.
   DownloaderFlutterPlatform() : super(token: _token);

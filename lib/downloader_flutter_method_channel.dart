@@ -3,6 +3,10 @@ import 'package:flutter/services.dart';
 
 import 'downloader_flutter_platform_interface.dart';
 
+/// MethodChannelDownloaderFlutter
+/// MethodChannelDownloaderFlutter is a class extended from DownloaderFlutterPlatform
+/// This class responsible to communicate with native environment
+/// It hold the declaration for both method and event chanel
 
 class MethodChannelDownloaderFlutter extends DownloaderFlutterPlatform {
 
