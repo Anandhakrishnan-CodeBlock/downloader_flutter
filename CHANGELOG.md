@@ -1,3 +1,7 @@
+## 0.0.5
+
+* documentation update
+
 ## 0.0.4
 
 * README file update for demo video
