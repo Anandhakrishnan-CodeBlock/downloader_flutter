@@ -137,7 +137,7 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
             self.progressCallback?(DownloadProgress.statusSuccess(fileName: self.fileName, filePath: destinationURL.path))
             
             // 📢 Show completion notification
-            NotificationHelper.shared.showCompletionNotification(fileName: self.fileName)
+            NotificationHelper.shared.showCompletionNotification(fileName: self.fileName, filePath: destinationURL.path)
             
             // 🔵 SAVE TO PHOTOS
             if saveToPhotosEnabled {
