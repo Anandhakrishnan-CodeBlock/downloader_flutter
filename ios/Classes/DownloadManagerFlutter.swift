@@ -109,6 +109,9 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
         let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let destinationURL = documents.appendingPathComponent(fileName)
         
+        // 📢 Update notification with progress
+        NotificationHelper.shared.showProgressNotification(fileName: self.fileName, progress: progress)
+        
         self.progressCallback?(DownloadProgress.statusProgress(fileName: self.fileName, progress: progress, filePath: destinationURL.path))
     }
     
@@ -132,6 +135,9 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
             
             // 🔵 SUCCESS
             self.progressCallback?(DownloadProgress.statusSuccess(fileName: self.fileName, filePath: destinationURL.path))
+            
+            // 📢 Show completion notification
+            NotificationHelper.shared.showCompletionNotification(fileName: self.fileName)
             
             // 🔵 SAVE TO PHOTOS
             if saveToPhotosEnabled {
@@ -159,6 +165,9 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
         if let error = error {
             self.progressCallback?(DownloadProgress.statusFailed(fileName: self.fileName, message: error.localizedDescription))
             completionCallback?("Download Failed: \(fileName)")
+            
+            // 📢 Show failure notification
+            NotificationHelper.shared.showFailureNotification(fileName: self.fileName, message: error.localizedDescription)
             return
         }
         

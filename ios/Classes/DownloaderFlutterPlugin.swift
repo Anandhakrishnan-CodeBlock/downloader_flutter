@@ -16,6 +16,9 @@ public class DownloaderFlutterPlugin: NSObject, FlutterPlugin, FlutterStreamHand
         registrar.addMethodCallDelegate(instance, channel: downloadSingleFileMethodChannel)
         registrar.addMethodCallDelegate(instance, channel: downloadMultipleFileMethodChannel)
         eventChannel.setStreamHandler(instance)
+        
+        // 📢 Request notification permission for download progress
+        NotificationHelper.shared.requestPermission()
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
