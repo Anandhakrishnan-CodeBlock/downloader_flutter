@@ -1,5 +1,8 @@
 
 import 'downloader_flutter_platform_interface.dart';
+import 'src/models/download_progress.dart';
+
+export 'src/models/download_progress.dart';
 
 /// DownloaderFlutter
 /// DownloaderFlutter is a class provide methods to download files
@@ -45,7 +48,7 @@ class DownloaderFlutter {
 
   /// Downloads progress is to provide live status for the downloading file.
   /// Returns the downloaded status [Map] or throws a [PlatformException].
-  Stream<Map<String, dynamic>> downloadProgress() async* {
+  Stream<DownloadProgress> downloadProgress() async* {
     yield* DownloaderFlutterPlatform.instance.downloadProgress();
   }
 }

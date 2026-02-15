@@ -28,8 +28,12 @@ class MockDownloaderFlutterPlatform
   }
 
   @override
-  Stream<Map<String, dynamic>> downloadProgress() {
-    return Stream.value({});
+  Stream<DownloadProgress> downloadProgress() {
+    return Stream.value(DownloadProgress(
+      fileName: 'test.pdf',
+      status: DownloadStatus.success,
+      progress: 100,
+    ));
   }
 }
 

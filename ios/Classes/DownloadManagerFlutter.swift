@@ -106,8 +106,10 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
         guard totalBytesExpectedToWrite > 0 else { return }
         
         let progress = Int((Double(totalBytesWritten) / Double(totalBytesExpectedToWrite)) * 100)
+        let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let destinationURL = documents.appendingPathComponent(fileName)
         
-        self.progressCallback?(DownloadProgress.statusProgress(fileName: self.fileName, progress: progress))
+        self.progressCallback?(DownloadProgress.statusProgress(fileName: self.fileName, progress: progress, filePath: destinationURL.path))
     }
     
     // 🔵 COMPLETED → File moved to Documents folder
@@ -126,16 +128,22 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
             try FileManager.default.moveItem(at: location, to: destinationURL)
             
             // 🔵 COMPLETED
-            self.progressCallback?(DownloadProgress.statusCompleted(fileName: self.fileName))
+            self.progressCallback?(DownloadProgress.statusCompleted(fileName: self.fileName, filePath: destinationURL.path))
+            
+            // 🔵 SUCCESS
+            self.progressCallback?(DownloadProgress.statusSuccess(fileName: self.fileName, filePath: destinationURL.path))
             
             // 🔵 SAVE TO PHOTOS
             if saveToPhotosEnabled {
                 self.saveToPhoto.saveMediaToPhotos(from: destinationURL) { success, _ in
                     if success {
-                        self.progressCallback?(DownloadProgress.statusSaved(fileName: self.fileName))
+                        self.progressCallback?(DownloadProgress.statusSaved(fileName: self.fileName, filePath: destinationURL.path))
                     }
                 }
             }
+            
+            // Call completion callback here for successful download
+            completionCallback?("Download Success: \(self.fileName)")
             
         } catch {
             self.progressCallback?(DownloadProgress.statusError(fileName: self.fileName, message: "File move error: \(error)"))
@@ -143,7 +151,7 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
         }
     }
     
-    // 🔵 ERROR or FINAL SUCCESS
+    // 🔵 ERROR or FINAL SUCCESS (only for error handling now)
     func urlSession(_ session: URLSession,
                     task: URLSessionTask,
                     didCompleteWithError error: Error?) {
@@ -154,10 +162,9 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
             return
         }
         
-        // 🔵 FINAL SUCCESS
-        self.progressCallback?(DownloadProgress.statusSuccess(fileName: self.fileName))
-        self.completionCallback?("Download Success: \(self.fileName)")
+        // If there's no error, didFinishDownloadingTo handles the success callbacks.
+        // This delegate method is called after didFinishDownloadingTo, so no need to
+        // call statusSuccess again here if it was already successful.
+        // The completionCallback for success is now handled in didFinishDownloadingTo.
     }
 }
-
-

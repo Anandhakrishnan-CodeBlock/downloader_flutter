@@ -24,7 +24,7 @@ object DownloadManagerFlutter {
         fileName: String,
         showToast: Boolean,
         completion: (String) -> Unit,
-        progressCallback: (Map<String, Any>) -> Unit) {
+        progressCallback: (Map<String, Any?>) -> Unit) {
 
         CoroutineScope(Dispatchers.IO).launch {
 
@@ -86,7 +86,7 @@ object DownloadManagerFlutter {
         fileNames: List<String>,
         showToast: Boolean,
         completion: (String) -> Unit,
-        progressCallback: (Map<String, Any>) -> Unit) {
+        progressCallback: (Map<String, Any?>) -> Unit) {
 
         CoroutineScope(Dispatchers.IO).launch {
             val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
@@ -154,7 +154,7 @@ object DownloadManagerFlutter {
         downloadId: Long,
         showToast: Boolean,
         fileName: String,
-        progressCallback: (Map<String, Any>) -> Unit) {
+        progressCallback: (Map<String, Any?>) -> Unit) {
 
         val manager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
         val query = DownloadManager.Query().setFilterById(downloadId)
@@ -173,6 +173,7 @@ object DownloadManagerFlutter {
                         cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
                     val bytesTotal =
                         cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
+                    val localUri = cursor.getString(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_LOCAL_URI))
 
                     if (bytesTotal > 0) {
                         val progress = (bytesDownloaded * 100L / bytesTotal).toInt()
@@ -181,7 +182,8 @@ object DownloadManagerFlutter {
                             progressCallback(
                                 DownloadProgress.statusProgress(
                                     fileName = fileName,
-                                    progress = progress
+                                    progress = progress,
+                                    filePath = localUri
                                 )
                             )
                         }
@@ -197,12 +199,14 @@ object DownloadManagerFlutter {
                                 }
                                 progressCallback(
                                     DownloadProgress.statusSuccess(
-                                        fileName = fileName
+                                        fileName = fileName,
+                                        filePath = localUri
                                     )
                                 )
                                 progressCallback(
                                     DownloadProgress.statusCompleted(
-                                        fileName = fileName)
+                                        fileName = fileName,
+                                        filePath = localUri)
                                 )
                             }
                         }
@@ -218,7 +222,8 @@ object DownloadManagerFlutter {
                                 progressCallback(
                                     DownloadProgress.statusFailed(
                                         fileName = fileName,
-                                        message = "$reason"
+                                        message = "$reason",
+                                        filePath = localUri
 
                                     )
                                 )

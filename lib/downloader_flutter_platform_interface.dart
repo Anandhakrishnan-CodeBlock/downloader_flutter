@@ -1,6 +1,7 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'downloader_flutter_method_channel.dart';
+import 'src/models/download_progress.dart';
 
 /// DownloaderFlutterPlatform
 /// DownloaderFlutterPlatform is a abstract class
@@ -48,7 +49,7 @@ abstract class DownloaderFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('downloadMultipleFile() has not been implemented.');
   }
 
-  Stream<Map<String, dynamic>> downloadProgress() async* {
+  Stream<DownloadProgress> downloadProgress() async* {
     throw UnimplementedError('downloadProgress() has not been implemented.');
   }
 }

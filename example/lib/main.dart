@@ -111,43 +111,38 @@ class DownloadFilesApp extends State<MyApp> {
     setState(() {});
   }
 
-  void handleDownloadEvent(Map<String, dynamic> event) {
-    final status = event["status"] as String?;
-    if (status == null) {
-      debugPrint("⚠️ Unknown event: $event");
-      return;
-    }
-
-    final fileName = event["fileName"] as String? ?? "unknown";
+  void handleDownloadEvent(DownloadProgress event) {
+    final status = event.status;
+    final fileName = event.fileName;
 
     switch (status) {
-      case "started":
+      case DownloadStatus.started:
         debugPrint("🚀 Started $fileName");
         break;
 
-      case "progress":
-        final progress = event["progress"] as int? ?? 0;
+      case DownloadStatus.progress:
+        final progress = event.progress;
         debugPrint("📊 Progress $fileName: $progress%");
         break;
 
-      case "success":
-        debugPrint("✅ Completed $fileName");
+      case DownloadStatus.success:
+        debugPrint("✅ Success $fileName at ${event.filePath}");
+        break;
+      
+      case DownloadStatus.completed:
+        debugPrint("🎉 Completed $fileName");
         break;
 
-      case "saved":
+      case DownloadStatus.saved:
         debugPrint("📷 Saved to photo $fileName");
         break;
 
-      case "failed":
-        debugPrint("❌ Failed $fileName");
+      case DownloadStatus.failed:
+        debugPrint("❌ Failed $fileName: ${event.message}");
         break;
 
-      case "completed":
-        debugPrint("🎉 Download completed $fileName");
-        break;
-
-      case "error":
-        final message = event["message"] as String? ?? "Unknown error";
+      case DownloadStatus.error:
+        final message = event.message ?? "Unknown error";
         debugPrint("⚠️ Error: $message");
         break;
 
