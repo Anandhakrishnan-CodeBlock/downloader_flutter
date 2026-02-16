@@ -1,5 +1,8 @@
 
 import 'downloader_flutter_platform_interface.dart';
+import 'src/models/download_progress.dart';
+
+export 'src/models/download_progress.dart';
 
 /// DownloaderFlutter
 /// DownloaderFlutter is a class provide methods to download files
@@ -17,12 +20,14 @@ class DownloaderFlutter {
     required String fileName,
     required Function response,
     bool? saveToPhoto = false,
-    bool? showToastAndroid = false}) async {
+    bool? showToastAndroid = false,
+    Map<String, String>? headers}) async {
     return await DownloaderFlutterPlatform.instance.downloadSingleFile(
         url: url,
         fileName: fileName,
         saveToPhoto: saveToPhoto,
         showToastAndroid: showToastAndroid,
+        headers: headers,
         response: response);
   }
 
@@ -34,18 +39,20 @@ class DownloaderFlutter {
     required List<String> fileNames,
     required Function response,
     bool? saveToPhoto = false,
-    bool? showToastAndroid = false}) async {
+    bool? showToastAndroid = false,
+    Map<String, String>? headers}) async {
     return await DownloaderFlutterPlatform.instance.downloadMultipleFile(
         urls: urls,
         fileNames: fileNames,
         saveToPhoto: saveToPhoto,
         showToastAndroid: showToastAndroid,
+        headers: headers,
         response: response);
   }
 
   /// Downloads progress is to provide live status for the downloading file.
   /// Returns the downloaded status [Map] or throws a [PlatformException].
-  Stream<Map<String, dynamic>> downloadProgress() async* {
+  Stream<DownloadProgress> downloadProgress() async* {
     yield* DownloaderFlutterPlatform.instance.downloadProgress();
   }
 }

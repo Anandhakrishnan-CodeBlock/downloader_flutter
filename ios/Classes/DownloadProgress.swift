@@ -1,51 +1,61 @@
 class DownloadProgress {
 
-    static func statusStarted(fileName: String) -> [String: Any] {
+    static func statusStarted(fileName: String, filePath: String? = nil) -> [String: Any] {
         return [
             "status": "started",
-            "fileName": fileName
+            "fileName": fileName,
+            "filePath": filePath as Any
         ]
     }
 
-    static func statusProgress(fileName: String, progress: Int) -> [String: Any] {
+    static func statusProgress(fileName: String, progress: Int, filePath: String? = nil) -> [String: Any] {
         return [
             "status": "progress",
             "fileName": fileName,
-            "progress": progress
+            "progress": progress,
+            "filePath": filePath as Any
         ]
     }
 
-    static func statusCompleted(fileName: String) -> [String: Any] {
+    static func statusCompleted(fileName: String, filePath: String? = nil) -> [String: Any] {
         return [
             "status": "completed",
-            "fileName": fileName
+            "fileName": fileName,
+            "filePath": filePath as Any
         ]
     }
 
-    static func statusSaved(fileName: String) -> [String: Any] {
+    static func statusSaved(fileName: String, filePath: String? = nil) -> [String: Any] {
         return [
             "status": "saved",
-            "fileName": fileName
+            "fileName": fileName,
+            "filePath": filePath as Any
         ]
     }
     
-    static func statusSuccess(fileName: String) -> [String: Any] {
-           return ["status": "success", "fileName": fileName]
-       }
-
-    static func statusFailed(fileName: String, message: String) -> [String: Any] {
+    static func statusSuccess(fileName: String, filePath: String? = nil) -> [String: Any] {
         return [
-            "status": "failed",
+            "status": "success",
             "fileName": fileName,
-            "message": message
+            "filePath": filePath as Any
         ]
     }
 
-    static func statusError(fileName: String, message: String) -> [String: Any] {
+    static func statusFailed(fileName: String, message: String, filePath: String? = nil) -> [String: Any] {
+        return [
+            "status": "failed",
+            "fileName": fileName,
+            "message": message,
+            "filePath": filePath as Any
+        ]
+    }
+
+    static func statusError(fileName: String, message: String, filePath: String? = nil) -> [String: Any] {
         return [
             "status": "error",
             "fileName": fileName,
-            "message": message
+            "message": message,
+            "filePath": filePath as Any
         ]
     }
 }

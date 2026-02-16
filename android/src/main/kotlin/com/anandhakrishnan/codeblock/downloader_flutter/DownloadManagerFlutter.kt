@@ -23,8 +23,9 @@ object DownloadManagerFlutter {
         url: String,
         fileName: String,
         showToast: Boolean,
+        headers: Map<String, String>?,
         completion: (String) -> Unit,
-        progressCallback: (Map<String, Any>) -> Unit) {
+        progressCallback: (Map<String, Any?>) -> Unit) {
 
         CoroutineScope(Dispatchers.IO).launch {
 
@@ -35,6 +36,11 @@ object DownloadManagerFlutter {
                     .setAllowedOverMetered(true)
                     .setAllowedOverRoaming(true)
                     .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                    .apply {
+                        headers?.forEach { (key, value) ->
+                            addRequestHeader(key, value)
+                        }
+                    }
                     .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
 
                 val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
@@ -85,8 +91,9 @@ object DownloadManagerFlutter {
         urls: List<String>,
         fileNames: List<String>,
         showToast: Boolean,
+        headers: Map<String, String>?,
         completion: (String) -> Unit,
-        progressCallback: (Map<String, Any>) -> Unit) {
+        progressCallback: (Map<String, Any?>) -> Unit) {
 
         CoroutineScope(Dispatchers.IO).launch {
             val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
@@ -101,6 +108,11 @@ object DownloadManagerFlutter {
                         .setTitle(fileName)
                         .setDescription("Downloading $fileName")
                         .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                        .apply {
+                            headers?.forEach { (key, value) ->
+                                addRequestHeader(key, value)
+                            }
+                        }
                         .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
                         .setAllowedOverMetered(true)
                         .setAllowedOverRoaming(true)
@@ -154,7 +166,7 @@ object DownloadManagerFlutter {
         downloadId: Long,
         showToast: Boolean,
         fileName: String,
-        progressCallback: (Map<String, Any>) -> Unit) {
+        progressCallback: (Map<String, Any?>) -> Unit) {
 
         val manager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
         val query = DownloadManager.Query().setFilterById(downloadId)
@@ -173,6 +185,7 @@ object DownloadManagerFlutter {
                         cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
                     val bytesTotal =
                         cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
+                    val localUri = cursor.getString(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_LOCAL_URI))
 
                     if (bytesTotal > 0) {
                         val progress = (bytesDownloaded * 100L / bytesTotal).toInt()
@@ -181,7 +194,8 @@ object DownloadManagerFlutter {
                             progressCallback(
                                 DownloadProgress.statusProgress(
                                     fileName = fileName,
-                                    progress = progress
+                                    progress = progress,
+                                    filePath = localUri
                                 )
                             )
                         }
@@ -197,12 +211,14 @@ object DownloadManagerFlutter {
                                 }
                                 progressCallback(
                                     DownloadProgress.statusSuccess(
-                                        fileName = fileName
+                                        fileName = fileName,
+                                        filePath = localUri
                                     )
                                 )
                                 progressCallback(
                                     DownloadProgress.statusCompleted(
-                                        fileName = fileName)
+                                        fileName = fileName,
+                                        filePath = localUri)
                                 )
                             }
                         }
@@ -218,7 +234,8 @@ object DownloadManagerFlutter {
                                 progressCallback(
                                     DownloadProgress.statusFailed(
                                         fileName = fileName,
-                                        message = "$reason"
+                                        message = "$reason",
+                                        filePath = localUri
 
                                     )
                                 )

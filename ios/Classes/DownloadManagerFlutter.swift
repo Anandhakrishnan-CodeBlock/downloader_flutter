@@ -12,9 +12,11 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
     var fileName: String = ""
     var saveToPhotosEnabled: Bool = false
     
-    // Custom URLSession with delegate
+    // Background URLSession — downloads continue even when the app is minimized or killed
     lazy var session: URLSession = {
-        let config = URLSessionConfiguration.default
+        let config = URLSessionConfiguration.background(withIdentifier: "com.downloader.flutter.single.\(UUID().uuidString)")
+        config.isDiscretionary = false
+        config.sessionSendsLaunchEvents = true
         return URLSession(configuration: config, delegate: self, delegateQueue: nil)
     }()
     
@@ -24,6 +26,7 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
         from urlString: String,
         fileName: String,
         saveToPhotos: Bool,
+        headers: [String: String]?,
         completion: @escaping (String) -> Void,
         progressCallback: @escaping ([String: Any]) -> Void
     ) {
@@ -43,7 +46,13 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
         completion("Single File Download Started")
         
         // Start using delegate-based session for progress
-        let task = session.downloadTask(with: url)
+        var request = URLRequest(url: url)
+        if let headers = headers {
+            for (key, value) in headers {
+                request.addValue(value, forHTTPHeaderField: key)
+            }
+        }
+        let task = session.downloadTask(with: request)
         task.resume()
     }
     
@@ -51,6 +60,7 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
         from urlStrings: [String],
         fileNames: [String],
         saveToPhotos: Bool,
+        headers: [String: String]?,
         completion: @escaping (String) -> Void,
         progressCallback: @escaping ([String: Any]) -> Void
     ) {
@@ -85,8 +95,14 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
                 }
             )
             
-            let session = URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
-            session.downloadTask(with: url).resume()
+            let session = delegate.createBackgroundSession()
+            var request = URLRequest(url: url)
+            if let headers = headers {
+                for (key, value) in headers {
+                    request.addValue(value, forHTTPHeaderField: key)
+                }
+            }
+            session.downloadTask(with: request).resume()
         }
         
         dispatchGroup.notify(queue: .main) {
@@ -106,8 +122,11 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
         guard totalBytesExpectedToWrite > 0 else { return }
         
         let progress = Int((Double(totalBytesWritten) / Double(totalBytesExpectedToWrite)) * 100)
+        let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let destinationURL = documents.appendingPathComponent(fileName)
         
-        self.progressCallback?(DownloadProgress.statusProgress(fileName: self.fileName, progress: progress))
+        
+        self.progressCallback?(DownloadProgress.statusProgress(fileName: self.fileName, progress: progress, filePath: destinationURL.path))
     }
     
     // 🔵 COMPLETED → File moved to Documents folder
@@ -126,16 +145,23 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
             try FileManager.default.moveItem(at: location, to: destinationURL)
             
             // 🔵 COMPLETED
-            self.progressCallback?(DownloadProgress.statusCompleted(fileName: self.fileName))
+            self.progressCallback?(DownloadProgress.statusCompleted(fileName: self.fileName, filePath: destinationURL.path))
+            
+            // 🔵 SUCCESS
+            self.progressCallback?(DownloadProgress.statusSuccess(fileName: self.fileName, filePath: destinationURL.path))
+            
             
             // 🔵 SAVE TO PHOTOS
             if saveToPhotosEnabled {
                 self.saveToPhoto.saveMediaToPhotos(from: destinationURL) { success, _ in
                     if success {
-                        self.progressCallback?(DownloadProgress.statusSaved(fileName: self.fileName))
+                        self.progressCallback?(DownloadProgress.statusSaved(fileName: self.fileName, filePath: destinationURL.path))
                     }
                 }
             }
+            
+            // Call completion callback here for successful download
+            completionCallback?("Download Success: \(self.fileName)")
             
         } catch {
             self.progressCallback?(DownloadProgress.statusError(fileName: self.fileName, message: "File move error: \(error)"))
@@ -143,7 +169,7 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
         }
     }
     
-    // 🔵 ERROR or FINAL SUCCESS
+    // 🔵 ERROR or FINAL SUCCESS (only for error handling now)
     func urlSession(_ session: URLSession,
                     task: URLSessionTask,
                     didCompleteWithError error: Error?) {
@@ -151,13 +177,18 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
         if let error = error {
             self.progressCallback?(DownloadProgress.statusFailed(fileName: self.fileName, message: error.localizedDescription))
             completionCallback?("Download Failed: \(fileName)")
+            
             return
         }
         
-        // 🔵 FINAL SUCCESS
-        self.progressCallback?(DownloadProgress.statusSuccess(fileName: self.fileName))
-        self.completionCallback?("Download Success: \(self.fileName)")
+        // If there's no error, didFinishDownloadingTo handles the success callbacks.
+        // This delegate method is called after didFinishDownloadingTo, so no need to
+        // call statusSuccess again here if it was already successful.
+        // The completionCallback for success is now handled in didFinishDownloadingTo.
+    }
+    
+    // 🔵 Called when all background session events have been delivered
+    func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
+        BackgroundSessionManager.shared.callCompletionHandler(for: session.configuration.identifier ?? "")
     }
 }
-
-

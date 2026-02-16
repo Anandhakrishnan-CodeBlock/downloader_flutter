@@ -14,7 +14,8 @@ class MockDownloaderFlutterPlatform
     required String fileName,
     required Function response,
     bool? saveToPhoto,
-    bool? showToastAndroid
+    bool? showToastAndroid,
+    Map<String, String>? headers
   }) => Future.value("Download Response");
 
   @override
@@ -23,13 +24,18 @@ class MockDownloaderFlutterPlatform
     required List<String> fileNames,
     required Function response,
     bool? saveToPhoto,
-    bool? showToastAndroid}) {
+    bool? showToastAndroid,
+    Map<String, String>? headers}) {
     return Future.value("Download Response");
   }
 
   @override
-  Stream<Map<String, dynamic>> downloadProgress() {
-    return Stream.value({});
+  Stream<DownloadProgress> downloadProgress() {
+    return Stream.value(DownloadProgress(
+      fileName: 'test.pdf',
+      status: DownloadStatus.success,
+      progress: 100,
+    ));
   }
 }
 

@@ -1,6 +1,7 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'downloader_flutter_method_channel.dart';
+import 'src/models/download_progress.dart';
 
 /// DownloaderFlutterPlatform
 /// DownloaderFlutterPlatform is a abstract class
@@ -35,7 +36,8 @@ abstract class DownloaderFlutterPlatform extends PlatformInterface {
     required String fileName,
     required Function response,
     bool? saveToPhoto = false,
-    bool? showToastAndroid = false}) async {
+    bool? showToastAndroid = false,
+    Map<String, String>? headers}) async {
     throw UnimplementedError('downloadSingleFile() has not been implemented.');
   }
 
@@ -44,11 +46,12 @@ abstract class DownloaderFlutterPlatform extends PlatformInterface {
     required List<String> fileNames,
     required Function response,
     bool? saveToPhoto = false,
-    bool? showToastAndroid = false}) async {
+    bool? showToastAndroid = false,
+    Map<String, String>? headers}) async {
     throw UnimplementedError('downloadMultipleFile() has not been implemented.');
   }
 
-  Stream<Map<String, dynamic>> downloadProgress() async* {
+  Stream<DownloadProgress> downloadProgress() async* {
     throw UnimplementedError('downloadProgress() has not been implemented.');
   }
 }

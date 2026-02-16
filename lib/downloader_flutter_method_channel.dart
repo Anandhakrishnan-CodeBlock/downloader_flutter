@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import 'downloader_flutter_platform_interface.dart';
+import 'src/models/download_progress.dart';
 
 /// MethodChannelDownloaderFlutter
 /// MethodChannelDownloaderFlutter is a class extended from DownloaderFlutterPlatform
@@ -16,7 +17,7 @@ class MethodChannelDownloaderFlutter extends DownloaderFlutterPlatform {
   static const downloadMultipleFileMethodChannel = MethodChannel('download_multiple_file_method_channel');
   static const downloadMultipleFileMethod = 'downloadMultipleFileMethod';
   static const downloadProgressEventChannel = EventChannel('download_progress_events');
-  Stream<Map<String, dynamic>>? downloadProgressStatus;
+  Stream<DownloadProgress>? downloadProgressStatus;
 
   @override
   Future<String?> downloadSingleFile({
@@ -24,14 +25,16 @@ class MethodChannelDownloaderFlutter extends DownloaderFlutterPlatform {
     required String fileName,
     required Function response,
     bool? saveToPhoto = false,
-    bool? showToastAndroid = false
+    bool? showToastAndroid = false,
+    Map<String, String>? headers
   }) async {
     try {
       final result = await downloadSingleFileMethodChannel.invokeMethod<String>(
           downloadSingleFileMethod, {'url': url,
         'file_name': fileName,
         'save_to_photo': saveToPhoto,
-        'show_toast': showToastAndroid
+        'show_toast': showToastAndroid,
+        'headers': headers
       });
       response(result);
       return result;
@@ -51,14 +54,16 @@ class MethodChannelDownloaderFlutter extends DownloaderFlutterPlatform {
     required List<String> fileNames,
     required Function response,
     bool? saveToPhoto = false,
-    bool? showToastAndroid = false
+    bool? showToastAndroid = false,
+    Map<String, String>? headers
   }) async {
     try {
       final result = await downloadMultipleFileMethodChannel.invokeMethod<String>(
           downloadMultipleFileMethod, { 'urls': urls,
         'file_names': fileNames,
         'save_to_photo': saveToPhoto,
-        'show_toast': showToastAndroid
+        'show_toast': showToastAndroid,
+        'headers': headers
       });
       response(result);
       return result;
@@ -73,10 +78,10 @@ class MethodChannelDownloaderFlutter extends DownloaderFlutterPlatform {
   }
 
   @override
-  Stream<Map<String, dynamic>> downloadProgress() async* {
+  Stream<DownloadProgress> downloadProgress() async* {
     try {
       downloadProgressStatus ??= downloadProgressEventChannel.receiveBroadcastStream()
-          .map((event) => Map<String, dynamic>.from(event));
+          .map((event) => DownloadProgress.fromMap(Map<String, dynamic>.from(event)));
     } on PlatformException catch (e) {
       debugPrint("PlatformException: ${e.code} - ${e.message}");
     } catch (e) {
