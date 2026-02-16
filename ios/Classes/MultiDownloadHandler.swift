@@ -7,6 +7,7 @@ class MultiDownloadHandler: NSObject, URLSessionDownloadDelegate {
     let saveToPhotos: Bool
     let progressCallback: ([String: Any]) -> Void
     let onFinish: () -> Void
+    let sessionIdentifier: String
     
     init(fileName: String,
          saveToPhotos: Bool,
@@ -16,6 +17,15 @@ class MultiDownloadHandler: NSObject, URLSessionDownloadDelegate {
         self.saveToPhotos = saveToPhotos
         self.progressCallback = progressCallback
         self.onFinish = onFinish
+        self.sessionIdentifier = "com.downloader.flutter.multi.\(UUID().uuidString)"
+    }
+    
+    /// Creates a background URLSession for this handler
+    func createBackgroundSession() -> URLSession {
+        let config = URLSessionConfiguration.background(withIdentifier: sessionIdentifier)
+        config.isDiscretionary = false
+        config.sessionSendsLaunchEvents = true
+        return URLSession(configuration: config, delegate: self, delegateQueue: nil)
     }
     
     func urlSession(_ session: URLSession,
@@ -28,8 +38,6 @@ class MultiDownloadHandler: NSObject, URLSessionDownloadDelegate {
         let progress = Int(Double(totalBytesWritten) / Double(totalBytesExpectedToWrite) * 100)
         let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let destinationURL = documents.appendingPathComponent(fileName)
-        // 📢 Update notification with progress
-        NotificationHelper.shared.showProgressNotification(fileName: self.fileName, progress: progress)
         
         self.progressCallback(DownloadProgress.statusProgress(fileName: self.fileName, progress: progress, filePath: destinationURL.path))
         
@@ -54,8 +62,6 @@ class MultiDownloadHandler: NSObject, URLSessionDownloadDelegate {
             // 🔵 SUCCESS
             self.progressCallback(DownloadProgress.statusSuccess(fileName: self.fileName, filePath: destinationURL.path))
             
-            // 📢 Show completion notification
-            NotificationHelper.shared.showCompletionNotification(fileName: self.fileName, filePath: destinationURL.path)
             
             if saveToPhotos {
                 SaveToPhoto().saveMediaToPhotos(from: destinationURL) { success, _ in
@@ -76,11 +82,14 @@ class MultiDownloadHandler: NSObject, URLSessionDownloadDelegate {
         if let error = error {
             self.progressCallback(DownloadProgress.statusFailed(fileName: self.fileName, message: error.localizedDescription))
             
-            // 📢 Show failure notification
-            NotificationHelper.shared.showFailureNotification(fileName: self.fileName, message: error.localizedDescription)
         } else {
             self.progressCallback(DownloadProgress.statusSuccess(fileName: self.fileName, filePath: nil))
         }
         onFinish()
+    }
+    
+    // 🔵 Called when all background session events have been delivered
+    func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
+        BackgroundSessionManager.shared.callCompletionHandler(for: sessionIdentifier)
     }
 }

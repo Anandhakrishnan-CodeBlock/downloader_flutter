@@ -17,8 +17,19 @@ public class DownloaderFlutterPlugin: NSObject, FlutterPlugin, FlutterStreamHand
         registrar.addMethodCallDelegate(instance, channel: downloadMultipleFileMethodChannel)
         eventChannel.setStreamHandler(instance)
         
-        // 📢 Request notification permission for download progress
-        NotificationHelper.shared.requestPermission()
+        // Register for application delegate callbacks (needed for background downloads)
+        registrar.addApplicationDelegate(instance)
+        
+    }
+    
+    // MARK: - Background URLSession Handler
+    
+    /// Called by iOS when events for a background URLSession are waiting to be processed.
+    /// This is essential for downloads to continue when the app is in the background.
+    public func application(_ application: UIApplication,
+                            handleEventsForBackgroundURLSession identifier: String,
+                            completionHandler: @escaping () -> Void) {
+        BackgroundSessionManager.shared.setCompletionHandler(completionHandler, for: identifier)
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {

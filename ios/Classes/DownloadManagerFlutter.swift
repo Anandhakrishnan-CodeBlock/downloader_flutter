@@ -12,9 +12,11 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
     var fileName: String = ""
     var saveToPhotosEnabled: Bool = false
     
-    // Custom URLSession with delegate
+    // Background URLSession — downloads continue even when the app is minimized or killed
     lazy var session: URLSession = {
-        let config = URLSessionConfiguration.default
+        let config = URLSessionConfiguration.background(withIdentifier: "com.downloader.flutter.single.\(UUID().uuidString)")
+        config.isDiscretionary = false
+        config.sessionSendsLaunchEvents = true
         return URLSession(configuration: config, delegate: self, delegateQueue: nil)
     }()
     
@@ -85,7 +87,7 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
                 }
             )
             
-            let session = URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
+            let session = delegate.createBackgroundSession()
             session.downloadTask(with: url).resume()
         }
         
@@ -109,8 +111,6 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
         let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let destinationURL = documents.appendingPathComponent(fileName)
         
-        // 📢 Update notification with progress
-        NotificationHelper.shared.showProgressNotification(fileName: self.fileName, progress: progress)
         
         self.progressCallback?(DownloadProgress.statusProgress(fileName: self.fileName, progress: progress, filePath: destinationURL.path))
     }
@@ -136,8 +136,6 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
             // 🔵 SUCCESS
             self.progressCallback?(DownloadProgress.statusSuccess(fileName: self.fileName, filePath: destinationURL.path))
             
-            // 📢 Show completion notification
-            NotificationHelper.shared.showCompletionNotification(fileName: self.fileName, filePath: destinationURL.path)
             
             // 🔵 SAVE TO PHOTOS
             if saveToPhotosEnabled {
@@ -166,8 +164,6 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
             self.progressCallback?(DownloadProgress.statusFailed(fileName: self.fileName, message: error.localizedDescription))
             completionCallback?("Download Failed: \(fileName)")
             
-            // 📢 Show failure notification
-            NotificationHelper.shared.showFailureNotification(fileName: self.fileName, message: error.localizedDescription)
             return
         }
         
@@ -175,5 +171,10 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
         // This delegate method is called after didFinishDownloadingTo, so no need to
         // call statusSuccess again here if it was already successful.
         // The completionCallback for success is now handled in didFinishDownloadingTo.
+    }
+    
+    // 🔵 Called when all background session events have been delivered
+    func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
+        BackgroundSessionManager.shared.callCompletionHandler(for: session.configuration.identifier ?? "")
     }
 }
