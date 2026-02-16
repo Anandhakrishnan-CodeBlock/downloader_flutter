@@ -20,12 +20,14 @@ class DownloaderFlutter {
     required String fileName,
     required Function response,
     bool? saveToPhoto = false,
-    bool? showToastAndroid = false}) async {
+    bool? showToastAndroid = false,
+    Map<String, String>? headers}) async {
     return await DownloaderFlutterPlatform.instance.downloadSingleFile(
         url: url,
         fileName: fileName,
         saveToPhoto: saveToPhoto,
         showToastAndroid: showToastAndroid,
+        headers: headers,
         response: response);
   }
 
@@ -37,12 +39,14 @@ class DownloaderFlutter {
     required List<String> fileNames,
     required Function response,
     bool? saveToPhoto = false,
-    bool? showToastAndroid = false}) async {
+    bool? showToastAndroid = false,
+    Map<String, String>? headers}) async {
     return await DownloaderFlutterPlatform.instance.downloadMultipleFile(
         urls: urls,
         fileNames: fileNames,
         saveToPhoto: saveToPhoto,
         showToastAndroid: showToastAndroid,
+        headers: headers,
         response: response);
   }
 

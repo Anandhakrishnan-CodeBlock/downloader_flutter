@@ -23,6 +23,7 @@ object DownloadManagerFlutter {
         url: String,
         fileName: String,
         showToast: Boolean,
+        headers: Map<String, String>?,
         completion: (String) -> Unit,
         progressCallback: (Map<String, Any?>) -> Unit) {
 
@@ -35,6 +36,11 @@ object DownloadManagerFlutter {
                     .setAllowedOverMetered(true)
                     .setAllowedOverRoaming(true)
                     .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                    .apply {
+                        headers?.forEach { (key, value) ->
+                            addRequestHeader(key, value)
+                        }
+                    }
                     .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
 
                 val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
@@ -85,6 +91,7 @@ object DownloadManagerFlutter {
         urls: List<String>,
         fileNames: List<String>,
         showToast: Boolean,
+        headers: Map<String, String>?,
         completion: (String) -> Unit,
         progressCallback: (Map<String, Any?>) -> Unit) {
 
@@ -101,6 +108,11 @@ object DownloadManagerFlutter {
                         .setTitle(fileName)
                         .setDescription("Downloading $fileName")
                         .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                        .apply {
+                            headers?.forEach { (key, value) ->
+                                addRequestHeader(key, value)
+                            }
+                        }
                         .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
                         .setAllowedOverMetered(true)
                         .setAllowedOverRoaming(true)

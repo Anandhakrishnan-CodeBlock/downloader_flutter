@@ -40,6 +40,7 @@ class DownloaderFlutterPlugin : FlutterPlugin, MethodCallHandler, EventChannel.S
                 val url = call.argument<String>("url")
                 val fileName = call.argument<String>("file_name")
                 val showToast = call.argument<Boolean>("show_toast") ?: false
+                val headers = call.argument<Map<String, String>>("headers")
 
                 if (url.isNullOrEmpty()) {
                     result.error("INVALID_ARGUMENTS", "Missing 'url'", null)
@@ -57,6 +58,7 @@ class DownloaderFlutterPlugin : FlutterPlugin, MethodCallHandler, EventChannel.S
                     url = url,
                     fileName = fileName,
                     showToast = showToast,
+                    headers = headers,
                     completion = { completion ->
                         result.success(completion)
                     },
@@ -71,6 +73,7 @@ class DownloaderFlutterPlugin : FlutterPlugin, MethodCallHandler, EventChannel.S
                 val urls = call.argument<List<String>>("urls")
                 val fileNames = call.argument<List<String>>("file_names")
                 val showToast = call.argument<Boolean>("show_toast") ?: false
+                val headers = call.argument<Map<String, String>>("headers")
 
                 if (urls.isNullOrEmpty() || fileNames.isNullOrEmpty() || urls.size != fileNames.size) {
                     result.error("INVALID_ARGUMENTS", "URLs or file names missing/mismatched", null)
@@ -83,6 +86,7 @@ class DownloaderFlutterPlugin : FlutterPlugin, MethodCallHandler, EventChannel.S
                     urls = urls,
                     fileNames = fileNames,
                     showToast = showToast,
+                    headers = headers,
                     completion = { completion ->
                         result.success(completion)
                     },

@@ -26,6 +26,7 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
         from urlString: String,
         fileName: String,
         saveToPhotos: Bool,
+        headers: [String: String]?,
         completion: @escaping (String) -> Void,
         progressCallback: @escaping ([String: Any]) -> Void
     ) {
@@ -45,7 +46,13 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
         completion("Single File Download Started")
         
         // Start using delegate-based session for progress
-        let task = session.downloadTask(with: url)
+        var request = URLRequest(url: url)
+        if let headers = headers {
+            for (key, value) in headers {
+                request.addValue(value, forHTTPHeaderField: key)
+            }
+        }
+        let task = session.downloadTask(with: request)
         task.resume()
     }
     
@@ -53,6 +60,7 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
         from urlStrings: [String],
         fileNames: [String],
         saveToPhotos: Bool,
+        headers: [String: String]?,
         completion: @escaping (String) -> Void,
         progressCallback: @escaping ([String: Any]) -> Void
     ) {
@@ -88,7 +96,13 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
             )
             
             let session = delegate.createBackgroundSession()
-            session.downloadTask(with: url).resume()
+            var request = URLRequest(url: url)
+            if let headers = headers {
+                for (key, value) in headers {
+                    request.addValue(value, forHTTPHeaderField: key)
+                }
+            }
+            session.downloadTask(with: request).resume()
         }
         
         dispatchGroup.notify(queue: .main) {

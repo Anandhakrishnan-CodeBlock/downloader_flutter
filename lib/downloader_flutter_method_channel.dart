@@ -25,14 +25,16 @@ class MethodChannelDownloaderFlutter extends DownloaderFlutterPlatform {
     required String fileName,
     required Function response,
     bool? saveToPhoto = false,
-    bool? showToastAndroid = false
+    bool? showToastAndroid = false,
+    Map<String, String>? headers
   }) async {
     try {
       final result = await downloadSingleFileMethodChannel.invokeMethod<String>(
           downloadSingleFileMethod, {'url': url,
         'file_name': fileName,
         'save_to_photo': saveToPhoto,
-        'show_toast': showToastAndroid
+        'show_toast': showToastAndroid,
+        'headers': headers
       });
       response(result);
       return result;
@@ -52,14 +54,16 @@ class MethodChannelDownloaderFlutter extends DownloaderFlutterPlatform {
     required List<String> fileNames,
     required Function response,
     bool? saveToPhoto = false,
-    bool? showToastAndroid = false
+    bool? showToastAndroid = false,
+    Map<String, String>? headers
   }) async {
     try {
       final result = await downloadMultipleFileMethodChannel.invokeMethod<String>(
           downloadMultipleFileMethod, { 'urls': urls,
         'file_names': fileNames,
         'save_to_photo': saveToPhoto,
-        'show_toast': showToastAndroid
+        'show_toast': showToastAndroid,
+        'headers': headers
       });
       response(result);
       return result;

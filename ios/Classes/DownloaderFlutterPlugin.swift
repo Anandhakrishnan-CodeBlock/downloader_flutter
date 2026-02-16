@@ -39,15 +39,18 @@ public class DownloaderFlutterPlugin: NSObject, FlutterPlugin, FlutterStreamHand
             if let args = call.arguments as? [String: Any],
                let url = args["url"] as? String,
                let fileName = args["file_name"] as? String,
-                let saveToPhotos = args["save_to_photo"] as? Bool {
-                print("📦 URL: \(url)")
-                print("📄 File name: \(fileName)")
-                
-                downloadManager.downloadSingleFile(
-                    from: url,
-                    fileName: fileName,
-                    saveToPhotos: saveToPhotos,
-                    completion: { message in
+                let saveToPhotos = args["save_to_photo"] as? Bool,
+                let headers = args["headers"] as? [String: String] {
+                 print("📦 URL: \(url)")
+                 print("📄 File name: \(fileName)")
+                 print("🔑 Headers: \(headers)")
+                 
+                 downloadManager.downloadSingleFile(
+                     from: url,
+                     fileName: fileName,
+                     saveToPhotos: saveToPhotos,
+                     headers: headers,
+                     completion: { message in
                         result("\(message)")
                     },
                     progressCallback: { progress in
@@ -67,14 +70,17 @@ public class DownloaderFlutterPlugin: NSObject, FlutterPlugin, FlutterStreamHand
             if let args = call.arguments as? [String: Any],
                let urls = args["urls"] as? [String],
                let fileNames = args["file_names"] as? [String],
-               let saveToPhotos = args["save_to_photo"] as? Bool {
+               let saveToPhotos = args["save_to_photo"] as? Bool,
+               let headers = args["headers"] as? [String: String] {
                 print("📦 URL: \(urls)")
                 print("📄 File name: \(fileNames)")
+                print("🔑 Headers: \(headers)")
                 
                 downloadManager.downloadMultipleFiles(
                     from: urls,
                     fileNames: fileNames,
                     saveToPhotos: saveToPhotos,
+                    headers: headers,
                     completion: { message in
                         result("\(message)")
                     },
