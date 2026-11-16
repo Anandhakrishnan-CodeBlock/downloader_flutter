@@ -2,86 +2,102 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import 'downloader_flutter_platform_interface.dart';
-
-/// MethodChannelDownloaderFlutter
-/// MethodChannelDownloaderFlutter is a class extended from DownloaderFlutterPlatform
-/// This class responsible to communicate with native environment
-/// It hold the declaration for both method and event chanel
+import 'src/models/download_preferences.dart';
+import 'src/models/download_task.dart';
 
 class MethodChannelDownloaderFlutter extends DownloaderFlutterPlatform {
+  @visibleForTesting
+  final methodChannel = const MethodChannel(
+    'com.anandhakrishnan.codeblock.downloader_flutter/methods',
+  );
 
   @visibleForTesting
-  static const downloadSingleFileMethodChannel = MethodChannel('download_single_file_method_channel');
-  static const downloadSingleFileMethod = 'downloadSingleFileMethod';
-  static const downloadMultipleFileMethodChannel = MethodChannel('download_multiple_file_method_channel');
-  static const downloadMultipleFileMethod = 'downloadMultipleFileMethod';
-  static const downloadProgressEventChannel = EventChannel('download_progress_events');
-  Stream<Map<String, dynamic>>? downloadProgressStatus;
+  final eventChannel = const EventChannel(
+    'com.anandhakrishnan.codeblock.downloader_flutter/events',
+  );
+
+  Stream<List<DownloadTask>>? _downloadsStream;
 
   @override
-  Future<String?> downloadSingleFile({
-    required String? url,
+  Future<bool> requestNotificationPermission() async {
+    final granted = await methodChannel.invokeMethod<bool>('requestNotificationPermission');
+    return granted ?? false;
+  }
+
+  @override
+  Future<int> downloadSingleFile({
+    required String url,
     required String fileName,
-    required Function response,
-    bool? saveToPhoto = false,
-    bool? showToastAndroid = false
+    DownloadPreferences preferences = const DownloadPreferences(),
   }) async {
-    try {
-      final result = await downloadSingleFileMethodChannel.invokeMethod<String>(
-          downloadSingleFileMethod, {'url': url,
-        'file_name': fileName,
-        'save_to_photo': saveToPhoto,
-        'show_toast': showToastAndroid
-      });
-      response(result);
-      return result;
-    } on PlatformException catch (e) {
-      debugPrint("PlatformException: ${e.code} - ${e.message}");
-      response(e);
-      return "PlatformException: ${e.code} - ${e.message}";
-    } catch (e) {
-      response(e);
-      return "Exception: $e";
-    }
+    final id = await methodChannel.invokeMethod<int>('downloadSingleFile', {
+      'url': url,
+      'fileName': fileName,
+      ...preferences.toMap(),
+    });
+    return id ?? -1;
   }
 
   @override
-  Future<String?> downloadMultipleFile({
-    required List<String?> urls,
-    required List<String> fileNames,
-    required Function response,
-    bool? saveToPhoto = false,
-    bool? showToastAndroid = false
+  Future<void> downloadMultipleFiles({
+    required List<DownloadRequestItem> items,
+    DownloadPreferences preferences = const DownloadPreferences(),
   }) async {
-    try {
-      final result = await downloadMultipleFileMethodChannel.invokeMethod<String>(
-          downloadMultipleFileMethod, { 'urls': urls,
-        'file_names': fileNames,
-        'save_to_photo': saveToPhoto,
-        'show_toast': showToastAndroid
-      });
-      response(result);
-      return result;
-    } on PlatformException catch (e) {
-      debugPrint("PlatformException: ${e.code} - ${e.message}");
-      response(e);
-      return "PlatformException: ${e.code} - ${e.message}";
-    } catch (e) {
-      response(e);
-      return "Exception: $e";
-    }
+    await methodChannel.invokeMethod<void>('downloadMultipleFiles', {
+      'items': items.map((e) => e.toMap()).toList(),
+      ...preferences.toMap(),
+    });
   }
 
   @override
-  Stream<Map<String, dynamic>> downloadProgress() async* {
-    try {
-      downloadProgressStatus ??= downloadProgressEventChannel.receiveBroadcastStream()
-          .map((event) => Map<String, dynamic>.from(event));
-    } on PlatformException catch (e) {
-      debugPrint("PlatformException: ${e.code} - ${e.message}");
-    } catch (e) {
-      debugPrint("Exception: $e");
-    }
-    yield* downloadProgressStatus!;
+  Future<void> pauseDownload(int id, {bool? showToastAndroid}) async {
+    await methodChannel.invokeMethod<void>('pauseDownload', {
+      'id': id,
+      if (showToastAndroid != null) 'showToastAndroid': showToastAndroid,
+    });
+  }
+
+  @override
+  Future<void> resumeDownload(int id, {bool? showToastAndroid}) async {
+    await methodChannel.invokeMethod<void>('resumeDownload', {
+      'id': id,
+      if (showToastAndroid != null) 'showToastAndroid': showToastAndroid,
+    });
+  }
+
+  @override
+  Future<void> cancelDownload(int id, {bool? showToastAndroid}) async {
+    await methodChannel.invokeMethod<void>('cancelDownload', {
+      'id': id,
+      if (showToastAndroid != null) 'showToastAndroid': showToastAndroid,
+    });
+  }
+
+  @override
+  Future<void> deleteDownload(int id, {bool? showToastAndroid}) async {
+    await methodChannel.invokeMethod<void>('deleteDownload', {
+      'id': id,
+      if (showToastAndroid != null) 'showToastAndroid': showToastAndroid,
+    });
+  }
+
+  @override
+  Future<List<DownloadTask>> getAllDownloads() async {
+    final rawList = await methodChannel.invokeListMethod<dynamic>('getAllDownloads');
+    if (rawList == null) return const [];
+    return rawList
+        .map((item) => DownloadTask.fromMap(Map<String, dynamic>.from(item as Map)))
+        .toList();
+  }
+
+  @override
+  Stream<List<DownloadTask>> watchDownloads() {
+    _downloadsStream ??= eventChannel.receiveBroadcastStream().map((event) {
+      final rawList = event as List<dynamic>;
+      return rawList
+          .map((item) => DownloadTask.fromMap(Map<String, dynamic>.from(item as Map)))
+          .toList();
+    });
+    return _downloadsStream!;
   }
 }

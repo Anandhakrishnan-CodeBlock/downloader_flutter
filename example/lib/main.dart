@@ -1,158 +1,287 @@
 import 'package:downloader_flutter/downloader_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const MaterialApp(home: DownloadManagerExampleScreen()));
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+class DownloadManagerExampleScreen extends StatefulWidget {
+  const DownloadManagerExampleScreen({super.key});
 
   @override
-  State<MyApp> createState() => DownloadFilesApp();
+  State<DownloadManagerExampleScreen> createState() =>
+      _DownloadManagerExampleScreenState();
 }
 
-class DownloadFilesApp extends State<MyApp> {
-  final _downloadManagerFlutterPlugin = DownloaderFlutter();
-  String _fdmStatus = '';
+class _DownloadManagerExampleScreenState
+    extends State<DownloadManagerExampleScreen> {
+  final _downloader = DownloaderFlutter();
+
+  DownloadPreferences _preferences = const DownloadPreferences(
+    isImmediate: true,
+    isWifiOnly: false,
+    isPowerSavingEnabled: false,
+    isOneByOne: false,
+    showToastAndroid: false,
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _downloader.requestNotificationPermission();
+  }
+
+  Future<void> _startSingleDownload() async {
+    final ts = DateTime.now().millisecondsSinceEpoch;
+    await _downloader.downloadSingleFile(
+      url: 'https://speed.cloudflare.com/__down?bytes=10485760',
+      fileName: 'test_10mb_$ts.bin',
+      preferences: _preferences,
+    );
+  }
+
+  Future<void> _startBatchDownload() async {
+    final ts = DateTime.now().millisecondsSinceEpoch;
+    await _downloader.downloadMultipleFiles(
+      items: [
+        DownloadRequestItem(
+          url: 'https://speed.cloudflare.com/__down?bytes=5242880',
+          fileName: 'batch_5mb_$ts.bin',
+        ),
+        DownloadRequestItem(
+          url: 'https://speed.cloudflare.com/__down?bytes=10485760',
+          fileName: 'batch_10mb_$ts.bin',
+        ),
+        DownloadRequestItem(
+          url: 'https://codeload.github.com/Anandhakrishnan-CodeBlock/downloader_flutter/zip/refs/heads/main',
+          fileName: 'repo_$ts.zip',
+        ),
+      ],
+      preferences: _preferences,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: const Text('Downloader Flutter')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  downloadSingleFile();
-                },
-                child: Text("Download Single File"),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  downloadMultipleFile();
-                },
-                child: Text("Download Multiple File"),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
+    return Scaffold(
+      appBar: AppBar(title: const Text('Downloader Plugin Test')),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: Column(
                   children: [
-                    Text('Flutter Download Manager Status:'),
-                    SizedBox(height: 10,),
-                    Text(_fdmStatus),
+                    SwitchListTile(
+                      dense: true,
+                      title: const Text('Immediate Download'),
+                      value: _preferences.isImmediate,
+                      onChanged: (v) => setState(
+                            () => _preferences = _preferences.copyWith(isImmediate: v),
+                      ),
+                    ),
+                    SwitchListTile(
+                      dense: true,
+                      title: const Text('Wi-Fi Only'),
+                      value: _preferences.isWifiOnly,
+                      onChanged: (v) => setState(
+                            () => _preferences = _preferences.copyWith(isWifiOnly: v),
+                      ),
+                    ),
+                    SwitchListTile(
+                      dense: true,
+                      title: const Text('Power Saving Support'),
+                      value: _preferences.isPowerSavingEnabled,
+                      onChanged: (v) => setState(
+                            () => _preferences =
+                            _preferences.copyWith(isPowerSavingEnabled: v),
+                      ),
+                    ),
+                    SwitchListTile(
+                      dense: true,
+                      title: const Text('One By One (Sequential)'),
+                      value: _preferences.isOneByOne,
+                      onChanged: (v) => setState(
+                            () => _preferences = _preferences.copyWith(isOneByOne: v),
+                      ),
+                    ),
+                    SwitchListTile(
+                      dense: true,
+                      title: const Text('Show Android Toasts'),
+                      value: _preferences.showToastAndroid,
+                      onChanged: (v) => setState(
+                            () => _preferences =
+                            _preferences.copyWith(showToastAndroid: v),
+                      ),
+                    ),
                   ],
                 ),
               ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _startSingleDownload,
+                    child: const Text('Single Download'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton.tonal(
+                    onPressed: _startBatchDownload,
+                    child: const Text('Batch (3 Files)'),
+                  ),
+                ),
+              ],
+            ),
+            const Divider(height: 24),
+            Expanded(
+              child: StreamBuilder<List<DownloadTask>>(
+                stream: _downloader.watchDownloads(),
+                builder: (context, snapshot) {
+                  final tasks = snapshot.data ?? const [];
+                  if (tasks.isEmpty) {
+                    return const Center(child: Text('No downloads yet'));
+                  }
+                  return ListView.separated(
+                    itemCount: tasks.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    itemBuilder: (context, index) {
+                      final task = tasks[index];
+                      return _DownloadTaskTile(
+                        task: task,
+                        onPause: () => _downloader.pauseDownload(task.id),
+                        onResume: () => _downloader.resumeDownload(task.id),
+                        onCancel: () => _downloader.cancelDownload(task.id),
+                        onDelete: () => _downloader.deleteDownload(task.id),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DownloadTaskTile extends StatelessWidget {
+  final DownloadTask task;
+  final VoidCallback onPause;
+  final VoidCallback onResume;
+  final VoidCallback onCancel;
+  final VoidCallback onDelete;
+
+  const _DownloadTaskTile({
+    required this.task,
+    required this.onPause,
+    required this.onResume,
+    required this.onCancel,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isIndeterminate =
+        task.status == DownloadStatus.running && task.totalBytes <= 0;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    task.fileName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Text(
+                  task.status.name.toUpperCase(),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            LinearProgressIndicator(
+              value: isIndeterminate
+                  ? null
+                  : (task.percentage / 100.0).clamp(0.0, 1.0),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '${_formatBytes(task.downloadedBytes)} / '
+                  '${task.totalBytes > 0 ? _formatBytes(task.totalBytes) : "Unknown"} '
+                  '(${task.percentage.toInt()}%)',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            if (task.errorMessage != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                task.errorMessage!,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.error,
+                  fontSize: 12,
+                ),
+              ),
             ],
-          ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              children: [
+                OutlinedButton(
+                  onPressed: (task.status == DownloadStatus.running ||
+                      task.status == DownloadStatus.queued)
+                      ? onPause
+                      : null,
+                  child: const Text('Pause'),
+                ),
+                OutlinedButton(
+                  onPressed: (task.status == DownloadStatus.paused ||
+                      task.status == DownloadStatus.failed ||
+                      task.status == DownloadStatus.cancelled)
+                      ? onResume
+                      : null,
+                  child: const Text('Continue'),
+                ),
+                OutlinedButton(
+                  onPressed: (task.status == DownloadStatus.running ||
+                      task.status == DownloadStatus.queued ||
+                      task.status == DownloadStatus.paused)
+                      ? onCancel
+                      : null,
+                  child: const Text('Stop'),
+                ),
+                TextButton(
+                  onPressed: onDelete,
+                  child: const Text('Delete'),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
 
-  void downloadSingleFile() async {
-    try {
-      _fdmStatus = await _downloadManagerFlutterPlugin.downloadSingleFile(
-        url: 'https://images.pexels.com/photos/10725897/pexels-photo-10725897.jpeg',
-        fileName: "image.jpeg",
-        saveToPhoto: true,
-        showToastAndroid: false,
-        response: (data) {
-          _fdmStatus = "Response In App: $data";
-        },
-      ) ?? 'Download Manager Not Connected';
-
-      _downloadManagerFlutterPlugin.downloadProgress().listen((event) {
-        handleDownloadEvent(event);
-      });
-
-    } on PlatformException {
-      _fdmStatus = 'Failed to get platform version.';
-    }
-    setState(() {});
-  }
-
-  void downloadMultipleFile() async {
-    try {
-      _fdmStatus = await _downloadManagerFlutterPlugin.downloadMultipleFile(
-        urls: [
-          'https://images.pexels.com/photos/177598/pexels-photo-177598.jpeg',
-          'https://images.pexels.com/photos/577585/pexels-photo-577585.jpeg',
-          'https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg',
-          'https://images.pexels.com/photos/4816921/pexels-photo-4816921.jpeg',
-          'https://images.pexels.com/photos/248515/pexels-photo-248515.png',
-        ],
-        fileNames: [
-          'image1.jpg',
-          'image2.jpg',
-          'image3.jpg',
-          'image4.jpg',
-          'image5.png',
-        ],
-        saveToPhoto: true,
-        showToastAndroid: true,
-        response: (data) {
-          _fdmStatus = "Response In App: $data";
-        },
-      ) ?? 'Download Manager Not Connected';
-
-      _downloadManagerFlutterPlugin.downloadProgress().listen((event) {
-        handleDownloadEvent(event);
-      });
-
-    } on PlatformException {
-      _fdmStatus = 'Failed to get platform version.';
-    }
-    setState(() {});
-  }
-
-  void handleDownloadEvent(Map<String, dynamic> event) {
-    final status = event["status"] as String?;
-    if (status == null) {
-      debugPrint("⚠️ Unknown event: $event");
-      return;
-    }
-
-    final fileName = event["fileName"] as String? ?? "unknown";
-
-    switch (status) {
-      case "started":
-        debugPrint("🚀 Started $fileName");
-        break;
-
-      case "progress":
-        final progress = event["progress"] as int? ?? 0;
-        debugPrint("📊 Progress $fileName: $progress%");
-        break;
-
-      case "success":
-        debugPrint("✅ Completed $fileName");
-        break;
-
-      case "saved":
-        debugPrint("📷 Saved to photo $fileName");
-        break;
-
-      case "failed":
-        debugPrint("❌ Failed $fileName");
-        break;
-
-      case "completed":
-        debugPrint("🎉 Download completed $fileName");
-        break;
-
-      case "error":
-        final message = event["message"] as String? ?? "Unknown error";
-        debugPrint("⚠️ Error: $message");
-        break;
-
-      default:
-        debugPrint("❓ Unknown status: $status");
-    }
+  String _formatBytes(int bytes) {
+    if (bytes <= 0) return '0 B';
+    const kb = 1024.0;
+    const mb = kb * 1024.0;
+    if (bytes >= mb) return '${(bytes / mb).toStringAsFixed(2)} MB';
+    if (bytes >= kb) return '${(bytes / kb).toStringAsFixed(1)} KB';
+    return '$bytes B';
   }
 }

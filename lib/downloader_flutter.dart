@@ -1,51 +1,71 @@
+export 'src/models/download_preferences.dart';
+export 'src/models/download_status.dart';
+export 'src/models/download_task.dart';
 
 import 'downloader_flutter_platform_interface.dart';
-
-/// DownloaderFlutter
-/// DownloaderFlutter is a class provide methods to download files
-/// downloadSingleFile() method support single file download support
-/// downloadMultipleFile() method support multiple files download
-/// downloadProgress() event support to provide states for downloading file
+import 'src/models/download_preferences.dart';
+import 'src/models/download_task.dart';
 
 class DownloaderFlutter {
+  Future<bool> requestNotificationPermission() {
+    return DownloaderFlutterPlatform.instance.requestNotificationPermission();
+  }
 
-  /// Downloads a single file from the given [url], [fileName], [response] are required fields.
-  /// Optional fields [saveToPhoto] and [showToastAndroid]
-  /// Returns the downloaded success or throws a [PlatformException].
-  Future<String?> downloadSingleFile({
-    required String? url,
+  Future<int> downloadSingleFile({
+    required String url,
     required String fileName,
-    required Function response,
-    bool? saveToPhoto = false,
-    bool? showToastAndroid = false}) async {
-    return await DownloaderFlutterPlatform.instance.downloadSingleFile(
-        url: url,
-        fileName: fileName,
-        saveToPhoto: saveToPhoto,
-        showToastAndroid: showToastAndroid,
-        response: response);
+    DownloadPreferences preferences = const DownloadPreferences(),
+  }) {
+    return DownloaderFlutterPlatform.instance.downloadSingleFile(
+      url: url,
+      fileName: fileName,
+      preferences: preferences,
+    );
   }
 
-  /// Downloads a multiple file from the given [urls], [fileNames], [response] are required fields.
-  /// Optional fields [saveToPhoto] and [showToastAndroid]
-  /// Returns the downloaded success or throws a [PlatformException].
-  Future<String?> downloadMultipleFile({
-    required List<String?> urls,
-    required List<String> fileNames,
-    required Function response,
-    bool? saveToPhoto = false,
-    bool? showToastAndroid = false}) async {
-    return await DownloaderFlutterPlatform.instance.downloadMultipleFile(
-        urls: urls,
-        fileNames: fileNames,
-        saveToPhoto: saveToPhoto,
-        showToastAndroid: showToastAndroid,
-        response: response);
+  Future<void> downloadMultipleFiles({
+    required List<DownloadRequestItem> items,
+    DownloadPreferences preferences = const DownloadPreferences(),
+  }) {
+    return DownloaderFlutterPlatform.instance.downloadMultipleFiles(
+      items: items,
+      preferences: preferences,
+    );
   }
 
-  /// Downloads progress is to provide live status for the downloading file.
-  /// Returns the downloaded status [Map] or throws a [PlatformException].
-  Stream<Map<String, dynamic>> downloadProgress() async* {
-    yield* DownloaderFlutterPlatform.instance.downloadProgress();
+  Future<void> pauseDownload(int id, {bool? showToastAndroid}) {
+    return DownloaderFlutterPlatform.instance.pauseDownload(
+      id,
+      showToastAndroid: showToastAndroid,
+    );
+  }
+
+  Future<void> resumeDownload(int id, {bool? showToastAndroid}) {
+    return DownloaderFlutterPlatform.instance.resumeDownload(
+      id,
+      showToastAndroid: showToastAndroid,
+    );
+  }
+
+  Future<void> cancelDownload(int id, {bool? showToastAndroid}) {
+    return DownloaderFlutterPlatform.instance.cancelDownload(
+      id,
+      showToastAndroid: showToastAndroid,
+    );
+  }
+
+  Future<void> deleteDownload(int id, {bool? showToastAndroid}) {
+    return DownloaderFlutterPlatform.instance.deleteDownload(
+      id,
+      showToastAndroid: showToastAndroid,
+    );
+  }
+
+  Future<List<DownloadTask>> getAllDownloads() {
+    return DownloaderFlutterPlatform.instance.getAllDownloads();
+  }
+
+  Stream<List<DownloadTask>> watchDownloads() {
+    return DownloaderFlutterPlatform.instance.watchDownloads();
   }
 }
