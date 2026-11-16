@@ -23,10 +23,12 @@ allprojects {
 
 plugins {
     id("com.android.library")
+    id("org.jetbrains.kotlin.android")
+    id("com.google.devtools.ksp")
 }
 
 android {
-    namespace = "com.anandhakrishnan.codeblock.ak_player.ak_player"
+    namespace = "com.anandhakrishnan.codeblock.downloader_flutter"
 
     compileSdk = 36
 
@@ -72,6 +74,15 @@ kotlin {
 }
 
 dependencies {
+
+    val roomVersion = "3.0.3"
+
+    implementation("androidx.core:core-ktx:1.15.0")
+    implementation("androidx.work:work-runtime-ktx:2.10.0")
+    implementation("androidx.room3:room3-runtime:$roomVersion")
+    ksp("androidx.room3:room3-compiler:$roomVersion")
+    implementation("androidx.sqlite:sqlite-bundled:2.5.0-alpha13")
+
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.mockito:mockito-core:5.0.0")
 }
